@@ -6,7 +6,7 @@ setuptools.setup(
      name='pyaiutils',
      version='0.1.1',
      author="Prabhat Kumar de Oliveira, Guilherme Silva da Cunha, Erick Sperandio",
-     author_email="bartkoliveira@gmail.com, guiscunha@gmail.com, erick.sperandio@fieb.org.br",
+     author_email="prabhatkoliveira@gmail.com, guiscunha@gmail.com, erick.sperandio@fieb.org.br",
      description="Description",
      long_description=long_description,
      long_description_content_type="text/markdown",
