@@ -9,91 +9,78 @@ from imblearn.metrics import sensitivity_specificity_support
 import os
 
 
-def multiclass_predict_1d_to_nd(y_, unique_labels):
-    if(len(np.unique(y_)) != len(unique_labels)):
-        y_ = y_.argmax(axis=1)
-
-    y_new = []
-    for y in y_:
-        values = []
-        for u in unique_labels:
-            if(u == y):
-                values.append(1)
-            else:
-                values.append(0)
-        y_new.append(values)
-    return np.array(y_new)
-
-
-def multiclass_predict_nd_to_1d(y_):
-    return y_.argmax(axis=1)
-
 def prc_auc(y_true, y_pred, class_names):
-
-    if(len(y_pred.shape) == 1):
-        y_pred = multiclass_predict_1d_to_nd(y_pred, np.unique(y_pred))
-        y_true = multiclass_predict_1d_to_nd(y_true, np.unique(y_true))
     n_classes = len(class_names)
     precision = dict()
     recall = dict()
-    average_precision = []
+    avg_precision = []
     for i in range(n_classes):
-        precision[i], recall[i], _ = metrics.precision_recall_curve(y_true[:, i],
+        try:
+            precision[i], recall[i], _ = metrics.precision_recall_curve(
+                                                                    y_true[:, i],
                                                                     y_pred[:, i])
-        average_precision.append(
-            metrics.average_precision_score(y_true[:, i], y_pred[:, i]))
-    return average_precision
+            avg_precision.append(metrics.average_precision_score(y_true[:, i], 
+                                                                     y_pred[:, i]))
+        except Exception as e:
+            avg_precision.append(0)
+    return avg_precision
 
 
 def roc_auc(y_true, y_pred, class_names):
-    if(len(y_pred.shape) == 1):
-        y_pred = multiclass_predict_1d_to_nd(y_pred, np.unique(y_pred))
-        y_true = multiclass_predict_1d_to_nd(y_true, np.unique(y_true))
-
     n_classes = len(class_names)
     fpr = dict()
     tpr = dict()
     roc_auc = []
     for i in range(n_classes):
-        fpr[i], tpr[i], _ = metrics.roc_curve(y_true[:, i], y_pred[:, i])
-        roc_auc.append(metrics.auc(fpr[i], tpr[i]))
+        try:
+            fpr[i], tpr[i], _ = metrics.roc_curve(y_true[:, i], y_pred[:, i])
+            roc_auc.append(metrics.auc(fpr[i], tpr[i]))
+        except Exception as e:
+            roc_auc.append(0)
     return roc_auc
 
 
 def recall(tp, p):
-    return tp/p
+    rec = tp/p
+    idx_nan = np.argwhere(np.isnan(rec))
+    rec[idx_nan] = 0
+    return rec
 
 
 def specificity(tn, n):
-    return tn/n
+    spec = tn/n
+    idx_nan = np.argwhere(np.isnan(spec))
+    spec[idx_nan] = 0
+    return spec
 
 
 def accuracy(tn, tp, p, n):
-    return (tn + tp) / (p + n)
+    acc = (tn + tp) / (p + n)
+    idx_nan = np.argwhere(np.isnan(acc))
+    acc[idx_nan] = 0
+    return acc
 
 
 def precision(tp, fp):
-    return tp/(fp + tp)
+    prec = tp/(fp + tp)
+    idx_nan = np.argwhere(np.isnan(prec))
+    prec[idx_nan] = 0
+    return prec
 
 
 def f1_score(y_true, y_pred):
-    if(len(np.unique(y_pred)) != len(np.unique(y_true))):
-        y_pred = multiclass_predict_nd_to_1d(y_pred)
-        y_true = multiclass_predict_nd_to_1d(y_true)
+    if(y_true.shape[1] > 1):
+        y_true = np.argmax(y_true, axis=1)
+    if(y_pred.shape[1] > 1):
+        y_pred = np.argmax(y_pred, axis=1)
     return metrics.f1_score(y_true, y_pred, average=None)
 
-
-def get_metrics(y_test, y_pred, class_names=None, save_path=None):
+def get_metrics(y_test, y_pred, class_names, save_path=None):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
-
-    uniques = np.unique(y_test)
-
-    if(class_names is None):
-        class_names = list(uniques)
-    if(len(y_test.shape) == 1):
-        matrix = metrics.confusion_matrix(y_test, y_pred, labels=uniques)
-
+        
+    if(y_pred.shape[1] == 1):
+        matrix = metrics.confusion_matrix(y_test, y_pred, class_names)
     else:
         matrix = metrics.confusion_matrix(multiclass_predict_nd_to_1d(
             y_test), multiclass_predict_nd_to_1d(y_pred))
@@ -107,7 +94,7 @@ def get_metrics(y_test, y_pred, class_names=None, save_path=None):
     N = TN+FP
 
     metrics_ = pd.DataFrame()
-    rows = class_names.copy()
+    rows = list(class_names.copy())
     rows.append('Média')
     metrics_['Classes'] = rows
 
@@ -121,18 +108,18 @@ def get_metrics(y_test, y_pred, class_names=None, save_path=None):
     _prc_auc = np.append(_prc_auc, np.around(np.mean(_prc_auc), decimals=2))
 
     _precision = np.around(precision(TP, FP), decimals=2)
-    _precision = np.append(_precision, np.around(
-        np.mean(_precision), decimals=2))
+    _precision = np.append(_precision, np.around(np.mean(_precision), decimals=2))
 
     _recall = np.around(recall(TP, P), decimals=2)
     _recall = np.append(_recall, np.around(np.mean(_recall), decimals=2))
+    
     _specificity = np.around(specificity(TN, N), decimals=2)
     _specificity = np.append(_specificity, np.around(
         np.mean(_specificity), decimals=2))
 
     _accuracy = np.around(accuracy(TN, TP, P, N), decimals=2)
     _accuracy = np.append(_accuracy, np.around(np.mean(_accuracy), decimals=2))
-
+    
     metrics_["F1-score"] = _f1
     metrics_["ROC AUC"] = _roc_auc
     metrics_["PRC AUC"] = _prc_auc
@@ -158,21 +145,18 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visualize=False, cmap=None, normalize=True, labels=True, title='Matriz de confusão'):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
-    uniques = np.unique(y_pred)
-
-    if(len(y_pred.shape) == 1):
-        cm = metrics.confusion_matrix(y_test, y_pred, labels=uniques)
-    else:
+    
+    if(y_pred.shape[1] > 1):
+        y_pred = multiclass_predict_1d_to_nd(y_pred, np.arange(len(class_names)))
         y_test = multiclass_predict_nd_to_1d(y_test)
         y_pred = multiclass_predict_nd_to_1d(y_pred)
-
+    
         cm = metrics.confusion_matrix(y_test, y_pred)
-
-    rotulos = []
-    for index, value in enumerate(uniques):
-        for i, v in enumerate(uniques):
-            rotulos.append('')
-
+    else:
+        cm = metrics.confusion_matrix(y_test, y_pred)
+        
+    rotulos = class_names
+    
     if cmap is None:
         cmap = plt.get_cmap('Blues')
         cmap = truncate_colormap(cmap, 0.35, 0.85)
@@ -233,15 +217,12 @@ def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visu
 def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
-
-    if(len(y_pred.shape) == 1):
-        y_pred = multiclass_predict_1d_to_nd(y_pred, np.unique(y_test))
-        y_test = multiclass_predict_1d_to_nd(y_test, np.unique(y_test))
-    # else:
-        #y_pred = multiclass_predict_nd_to_1d(y_pred)
-        #y_test = multiclass_predict_nd_to_1d(y_test)
-        #y_pred = multiclass_predict_1d_to_nd(y_pred, class_names)
-        #y_test = multiclass_predict_1d_to_nd(y_test, class_names)
+    
+    if(y_pred.shape[1] > 1):
+        y_pred = multiclass_predict_1d_to_nd(y_pred, np.arange(len(class_names)))
+#         y_test = multiclass_predict_nd_to_1d(y_test)
+#         y_pred = multiclass_predict_nd_to_1d(y_p)
+        
     n_classes = len(class_names)
     fpr = dict()
     tpr = dict()
@@ -308,15 +289,12 @@ def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
 def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
+    
+    if(y_pred.shape[1] > 1):
+        y_pred = multiclass_predict_1d_to_nd(y_pred, np.arange(len(class_names)))
+#         y_test = multiclass_predict_nd_to_1d(y_test)
+#         y_pred = multiclass_predict_nd_to_1d(y_p)
 
-    if(len(y_pred.shape) == 1):
-        y_pred = multiclass_predict_1d_to_nd(y_pred, np.unique(y_test))
-        y_test = multiclass_predict_1d_to_nd(y_test, np.unique(y_test))
-    # else:
-        #y_pred = multiclass_predict_nd_to_1d(y_pred)
-        #y_test = multiclass_predict_nd_to_1d(y_test)
-        #y_pred = multiclass_predict_1d_to_nd(y_pred, class_names)
-        #y_test = multiclass_predict_1d_to_nd(y_test, class_names)
     n_classes = len(class_names)
     precision = dict()
     recall = dict()
@@ -378,9 +356,32 @@ def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
 def plot_graphics(y_true, y_pred, class_names=None, save_path=None):
     if(class_names is None):
         class_names = np.unique(np.array(y_pred))
-    display(plot_confusion_matrix(y_true, y_pred, visualize=True,
-                                  normalize=True, class_names=class_names, save_path=save_path))
-    display(plot_auc_roc_multi_class(y_true, y_pred,
+
+    display(plot_confusion_matrix(y_true, y_pred, visualize=True, 
+                                  normalize=True, class_names=class_names, 
+                                  save_path=save_path))
+
+    display(plot_auc_roc_multi_class(y_true, y_pred, 
                                      class_names=class_names, save_path=save_path))
-    display(plot_prc_auc_multiclass(y_true, y_pred,
+
+    display(plot_prc_auc_multiclass(y_true, y_pred, 
                                     class_names=class_names, save_path=save_path))
+
+def multiclass_predict_1d_to_nd(y_, unique_labels):
+    if(len(np.unique(y_)) != len(unique_labels)):
+        y_ = y_.argmax(axis=1)
+
+    y_new = []
+    for y in y_:
+        values = []
+        for u in unique_labels:
+            if(u == y):
+                values.append(1)
+            else:
+                values.append(0)
+        y_new.append(values)
+    return np.array(y_new)
+
+
+def multiclass_predict_nd_to_1d(y_):
+    return y_.argmax(axis=1)
