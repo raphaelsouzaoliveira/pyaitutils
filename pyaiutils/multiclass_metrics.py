@@ -21,6 +21,7 @@ def multiclass_predict_1d_to_nd(y_, unique_labels):
                 values.append(0)
         y_new.append(values)
     return np.array(y_new)
+
 def multiclass_predict_nd_to_1d(y_):
     return y_.argmax(axis=1)
 
@@ -38,6 +39,7 @@ def prc_auc(y_true, y_pred, class_names):
                                                             y_pred[:, i])
         average_precision.append(metrics.average_precision_score(y_true[:, i], y_pred[:, i]))
     return average_precision
+
 def roc_auc(y_true, y_pred, class_names):
     if(len(y_pred.shape) == 1):
         y_pred = multiclass_predict_1d_to_nd(y_pred, np.unique(y_true))
@@ -51,19 +53,25 @@ def roc_auc(y_true, y_pred, class_names):
         fpr[i], tpr[i], _ = metrics.roc_curve(y_true[:, i], y_pred[:, i])
         roc_auc.append(metrics.auc(fpr[i], tpr[i]))
     return roc_auc
+
 def recall(tp,p):
     return tp/p
+
 def specificity(tn,n):
     return tn/n
+
 def accuracy(tn, tp, p, n):
     return (tn + tp) / (p + n)
+
 def precision (tp, fp):
     return tp/(fp + tp)
+
 def f1_score(y_true, y_pred):
     if(len(np.unique(y_pred)) != len(np.unique(y_true))):
         y_pred = multiclass_predict_nd_to_1d(y_pred)
         y_true = multiclass_predict_nd_to_1d(y_true)
     return metrics.f1_score(y_true, y_pred, average=None)
+
 def get_metrics(y_test, y_pred, class_names = None, save_path=None):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
@@ -91,8 +99,7 @@ def get_metrics(y_test, y_pred, class_names = None, save_path=None):
     N = TN+FP
     
     metrics_ = pd.DataFrame()
-    rows = class_names.copy()
-    rows.append('Média')
+    rows = np.append(class_names.copy(), "Média")
     metrics_['Classes'] = rows
     
     _f1 = np.around(f1_score(y_test, y_pred), decimals=2)
@@ -128,6 +135,7 @@ def get_metrics(y_test, y_pred, class_names = None, save_path=None):
             os.makedirs(save_path, exist_ok=True)
         metrics_.to_csv (os.path.join(save_path, 'metrics.csv'), index = False, header=True)
     return metrics_
+
 def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visualize=False, cmap=None, normalize=True, labels=True, title='Matriz de confusão'):
     y_test = np.array(y_test)
     y_pred = np.array(y_pred)
@@ -162,7 +170,6 @@ def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visu
     
     #plt.colorbar()
     #plt.ylim(-0.5, len(class_names) - 0.5)
-
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2
     
@@ -274,6 +281,7 @@ def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
                 os.makedirs(save_path, exist_ok=True)
             plt.savefig(os.path.join(save_path, 'AUC_ROC.png'))
         plt.show()
+        
 def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):   
         y_test = np.array(y_test)
         y_pred = np.array(y_pred)
@@ -340,6 +348,7 @@ def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
                 os.makedirs(save_path, exist_ok=True)
             plt.savefig(os.path.join(save_path, 'AUC_PRC.png'))
         plt.show()
+        
 def plot_graphics(y_true, y_pred, class_names=None, save_path=None):
     if(class_names is None):
         class_names = np.unique(np.array(y_pred))
