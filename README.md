@@ -25,6 +25,15 @@ Use can be done by cloning the repository.
 pip install pyaiutils
 ```
 
+## Requirements
+```
+sklearn >= 0.23.1
+numpy >= 1.18.1
+matplotlib >= 3.1.3
+pandas >= 1.2.4
+imblearn >= 0.7.0
+```
+
 ## Usage
 
 ```python
