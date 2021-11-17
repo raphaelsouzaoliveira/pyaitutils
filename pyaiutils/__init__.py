@@ -84,7 +84,13 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 
 def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visualize=False, cmap=None, normalize=True, labels=True, title='Matriz de confusão'):
     y_test = np.array(y_test)
-    y_pred = np.argmax(y_pred, axis=1) 
+    
+    try:
+        y_pred = np.argmax(y_pred, axis=1) 
+    except Exception as e:
+        print(e)
+         
+        
     uniques = np.unique(y_test)
 
     if(len(class_names) == 0):
@@ -134,6 +140,8 @@ def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visu
     if labels:
         for i, j in iteraux(cm.shape[0], cm.shape[1]):
             if normalize:
+                perc_cm[i, j] = 0 if math.isnan(perc_cm[i, j]) else perc_cm[i, j]
+                cm[i, j] = 0 if math.isnan(cm[i, j]) else cm[i, j]
                 plt.text(j, i, f"{'{:0.2f}%'.format(perc_cm[i, j])}\n({cm[i, j]})", fontsize=16,
                          horizontalalignment='center', verticalalignment='center',
                          color='white' if cm[i, j] > thresh else 'black')
@@ -158,7 +166,11 @@ def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visu
 
 def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
     y_test = np.array(y_test)
-    y_pred = np.argmax(y_pred, axis=1)  
+    
+    try:
+        y_pred = np.argmax(y_pred, axis=1) 
+    except Exception as e:
+        print(e)
     
     if(len(class_names) == 0):
         if(len(y_test.shape) == 1):
@@ -254,7 +266,12 @@ def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
 
 def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
     y_test = np.array(y_test)
-    y_pred = np.argmax(y_pred, axis=1)  
+    
+    try:
+        y_pred = np.argmax(y_pred, axis=1) 
+    except Exception as e:
+        print(e)
+          
     
     if(len(class_names) == 0):
         if(len(y_test.shape) == 1):
@@ -346,13 +363,19 @@ def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
 
 def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     y_test = np.array(y_test)
-    y_pred = np.argmax(y_pred, axis=1)  
+    
+    try:
+        y_pred = np.argmax(y_pred, axis=1) 
+    except Exception as e:
+        print(e)
     
     if(len(class_names) == 0):
         if(len(y_test.shape) == 1):
             class_names = np.unique(y_test)
         else:
             class_names = np.unique(np.argmax(y_test, axis=1))
+            
+    print(class_names)
     
     if(len(y_test.shape) == 1):
         matrix = metrics.confusion_matrix(y_test, y_pred)
@@ -375,7 +398,6 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
                 y_pred_df[i] = np.array([0]*y_pred.shape[0])
                 
         y_pred = y_pred_df.values
-        
     
     TP = np.diag(matrix)
     FP = matrix.sum(axis=0) - TP
@@ -418,6 +440,7 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     _accuracy = np.around(accuracy(TN, TP, P, N), decimals=2)
     _accuracy = np.append(_accuracy, np.around(np.mean(_accuracy), decimals=2))
     _accuracy = np.append(_accuracy, np.round(weighted_average(_accuracy[0], _accuracy[1], P[0], P[1]), decimals=2))
+
     
     metrics_["F1"] = [0 if math.isnan(i) else i for i in _f1]
     metrics_["ROC AUC"] = [0 if math.isnan(i) else i for i in _roc_auc]
@@ -435,7 +458,8 @@ def plot_graphics(y_true, y_pred, class_names=[], save_path=None):
             class_names = np.unique(y_test)
         else:
             class_names = np.unique(np.argmax(y_test, axis=1))
-            
+    
+    
     display(plot_confusion_matrix(y_true, y_pred, visualize=True, normalize=True, class_names=class_names, save_path=save_path))
     display(plot_auc_roc_multi_class(y_true, y_pred, class_names=class_names, save_path=save_path))
     display(plot_prc_auc_multiclass(y_true, y_pred, class_names=class_names, save_path=save_path))
