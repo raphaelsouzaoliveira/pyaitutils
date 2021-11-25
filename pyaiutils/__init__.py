@@ -8,6 +8,11 @@ import math
 import os
 
 def cycle(iterable):
+    """Form a complex number.
+
+    Keyword arguments:
+    iterable -- the real part (default 0.0)
+    """
     saved = []
     for element in iterable:
         yield element
@@ -19,6 +24,12 @@ def cycle(iterable):
     return saved
 
 def iteraux(frstIter, scndIter):
+    """Form a complex number.
+
+    Keyword arguments:
+    frstIter -- the real part (default 0.0)
+    scndIter -- the imaginary part (default 0.0)
+    """
     itermtx = []
     for i in range(frstIter):
         for j in range(scndIter):
@@ -27,6 +38,13 @@ def iteraux(frstIter, scndIter):
     return itermtx
 
 def prc_auc(y_true, y_pred, class_names):
+    """Form a complex number.
+
+    Keyword arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    """
     n_classes = len(class_names)
     precision = dict()
     recall = dict()
@@ -40,6 +58,13 @@ def prc_auc(y_true, y_pred, class_names):
 
 
 def roc_auc(y_true, y_pred, class_names):
+    """Form a complex number.
+
+    Keyword arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    """
     n_classes = len(class_names)
     fpr = dict()
     tpr = dict()
@@ -51,31 +76,79 @@ def roc_auc(y_true, y_pred, class_names):
 
 
 def weighted_average(metric_p, metric_n, P, N):
+    """Form a complex number.
+
+    Keyword arguments:
+    metric_p -- the real part (default 0.0)
+    metric_n -- the imaginary part (default 0.0)
+    P -- the real part (default 0.0)
+    N -- the imaginary part (default 0.0)
+    """
     media_p = (metric_p*P + metric_n*N)/(P+N)
     return media_p
 
 
 def recall(tp, p):
+    """Form a complex number.
+
+    Keyword arguments:
+    tp -- the real part (default 0.0)
+    p -- the imaginary part (default 0.0)
+    """
     return tp/p
 
 
 def specificity(tn, n):
+    """Form a complex number.
+
+    Keyword arguments:
+    tn -- the real part (default 0.0)
+    n -- the imaginary part (default 0.0)
+    """
     return tn/n
 
 
 def accuracy(tn, tp, p, n):
+    """Form a complex number.
+
+    Keyword arguments:
+    tn -- the real part (default 0.0)
+    tp -- the imaginary part (default 0.0)
+    p -- the real part (default 0.0)
+    n -- the imaginary part (default 0.0)
+    """
     return (tn + tp) / (p + n)
 
 
 def precision(tp, fp):
+    """Form a complex number.
+
+    Keyword arguments:
+    tp -- the real part (default 0.0)
+    fp -- the imaginary part (default 0.0)
+    """
     return tp/(fp + tp)
 
 
 def f1_score(y_true, y_pred):
+    """Form a complex number.
+
+    Keyword arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    """
     return metrics.f1_score(y_true, y_pred, average=None)
 
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+    """Form a complex number.
+
+    Keyword arguments:
+    cmap -- the real part (default 0.0)
+    minval -- the imaginary part (default 0.0)
+    maxval -- the real part (default 0.0)
+    n -- the imaginary part (default 0.0)
+    """
     new_cmap = colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
         cmap(np.linspace(minval, maxval, n)))
@@ -83,6 +156,19 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 
 
 def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visualize=False, cmap=None, normalize=True, labels=True, title='Matriz de confusão'):
+    """Form a complex number.
+
+    Arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    save_path -- the imaginary part (default 0.0)
+    visualize -- the imaginary part (default 0.0)
+    cmap -- the imaginary part (default 0.0)
+    normalize -- the imaginary part (default 0.0)
+    labels -- the imaginary part (default 0.0)
+    title -- the imaginary part (default 0.0)
+    """
     y_test = np.array(y_test)
     
     try:
@@ -165,6 +251,14 @@ def plot_confusion_matrix(y_test, y_pred, class_names=None, save_path=None, visu
 
 
 def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
+    """Form a complex number.
+
+    Arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    save_path -- the imaginary part (default 0.0)
+    """
     y_test = np.array(y_test)
     
     try:
@@ -265,6 +359,14 @@ def plot_auc_roc_multi_class(y_test, y_pred, class_names, save_path=None):
 
 
 def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
+    """Form a complex number.
+
+    Arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    save_path -- the imaginary part (default 0.0)
+    """
     y_test = np.array(y_test)
     
     try:
@@ -362,20 +464,20 @@ def plot_prc_auc_multiclass(y_test, y_pred, class_names, save_path=None):
 ############################################################## Função Principal
 
 def get_metrics(y_test, y_pred, class_names=[], save_path=None):
+    """Form a complex number.
+
+    Arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    save_path -- the imaginary part (default 0.0)
+    """
     y_test = np.array(y_test)
     
     try:
         y_pred = np.argmax(y_pred, axis=1) 
     except Exception as e:
         print(e)
-    
-    if(len(class_names) == 0):
-        if(len(y_test.shape) == 1):
-            class_names = np.unique(y_test)
-        else:
-            class_names = np.unique(np.argmax(y_test, axis=1))
-            
-    print(class_names)
     
     if(len(y_test.shape) == 1):
         matrix = metrics.confusion_matrix(y_test, y_pred)
@@ -384,21 +486,40 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
         matrix = metrics.confusion_matrix(np.argmax(y_test, axis=1), y_pred)
         
     if(len(y_pred.shape) == 1):
-        class_check = np.unique(y_pred)
         y_pred = pd.get_dummies(y_pred).values
         
+    if(len(class_names) == 0):
+        if(len(y_test.shape) == 1):
+            class_names = np.unique(y_pred)
+        else:
+            class_test = np.unique(np.argmax(y_test, axis=1))
+            class_pred = np.unique(np.argmax(y_pred, axis=1))
+            class_names = class_test if len(class_test) >= len(class_pred) else class_pred
+        
     if(y_pred.shape[1] != y_test.shape[1]):
-        y_pred_df = pd.DataFrame(columns=class_names)
-        i_control = 0
-        for i in class_names:
-            if i in class_check:
-                y_pred_df[i] = y_pred[:, i_control]
-                i_control += 1
-            else:
-                y_pred_df[i] = np.array([0]*y_pred.shape[0])
-                
-        y_pred = y_pred_df.values
-    
+        if(len(class_test) > len(class_pred)):
+            y_pred_df = pd.DataFrame(columns=class_names)
+            i_control = 0
+            for i in class_names:
+                if i in class_pred:
+                    y_pred_df[i] = y_pred[:, i_control]
+                    i_control += 1
+                else:
+                    y_pred_df[i] = np.array([0]*y_pred.shape[0])
+
+            y_pred = y_pred_df.values
+        else:
+            y_test_df = pd.DataFrame(columns=class_names)
+            i_control = 0
+            for i in class_names:
+                if i in class_test:
+                    y_test_df[i] = y_test[:, i_control]
+                    i_control += 1
+                else:
+                    y_test_df[i] = np.array([0]*y_test.shape[0])
+
+            y_test = y_test_df.values
+        
     TP = np.diag(matrix)
     FP = matrix.sum(axis=0) - TP
     FN = matrix.sum(axis=1) - TP
@@ -440,7 +561,6 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     _accuracy = np.around(accuracy(TN, TP, P, N), decimals=2)
     _accuracy = np.append(_accuracy, np.around(np.mean(_accuracy), decimals=2))
     _accuracy = np.append(_accuracy, np.round(weighted_average(_accuracy[0], _accuracy[1], P[0], P[1]), decimals=2))
-
     
     metrics_["F1"] = [0 if math.isnan(i) else i for i in _f1]
     metrics_["ROC AUC"] = [0 if math.isnan(i) else i for i in _roc_auc]
@@ -453,6 +573,14 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     return metrics_
 
 def plot_graphics(y_true, y_pred, class_names=[], save_path=None):
+    """Form a complex number.
+
+    Arguments:
+    y_true -- the real part (default 0.0)
+    y_pred -- the imaginary part (default 0.0)
+    class_names -- the imaginary part (default 0.0)
+    save_path -- the imaginary part (default 0.0)
+    """
     if(len(class_names) == 0):
         if(len(y_test.shape) == 1):
             class_names = np.unique(y_test)
@@ -463,3 +591,4 @@ def plot_graphics(y_true, y_pred, class_names=[], save_path=None):
     display(plot_confusion_matrix(y_true, y_pred, visualize=True, normalize=True, class_names=class_names, save_path=save_path))
     display(plot_auc_roc_multi_class(y_true, y_pred, class_names=class_names, save_path=save_path))
     display(plot_prc_auc_multiclass(y_true, y_pred, class_names=class_names, save_path=save_path))
+
