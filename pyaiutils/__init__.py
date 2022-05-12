@@ -472,10 +472,17 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     class_names -- the imaginary part (default 0.0)
     save_path -- the imaginary part (default 0.0)
     """
-    y_test = np.array(y_test)
+    multiclass = True    
+    if len(np.shape(y_test)) > 1:
+        multiclass = False
+    print(multiclass)
+    y_test = np.array(y_test)    
     
-    try:
-        y_pred = np.argmax(y_pred, axis=1) 
+    try:        
+        if multiclass:
+            y_pred = np.argmax(y_pred, axis=1) 
+        else:
+            y_pred = y_pred
     except Exception as e:
         print(e)
     
@@ -483,18 +490,24 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
         matrix = metrics.confusion_matrix(y_test, y_pred)
         y_test = pd.get_dummies(y_test).values
     else:
-        matrix = metrics.confusion_matrix(np.argmax(y_test, axis=1), y_pred)
-        
+        if multiclass:
+            matrix = metrics.confusion_matrix(np.argmax(y_test, axis=1), y_pred)
+        else: 
+            matrix = metrics.multilabel_confusion_matrix(y_test, y_pred)
+            
     if(len(y_pred.shape) == 1):
         y_pred = pd.get_dummies(y_pred).values
         
     if(len(class_names) == 0):
-        if(len(y_test.shape) == 1):
-            class_names = np.unique(y_pred)
+        if multiclass:
+            if(len(y_test.shape) == 1):
+                class_names = np.unique(y_pred)
+            else:
+                class_test = np.unique(np.argmax(y_test, axis=1))
+                class_pred = np.unique(np.argmax(y_pred, axis=1))
+                class_names = class_test if len(class_test) >= len(class_pred) else class_pred
         else:
-            class_test = np.unique(np.argmax(y_test, axis=1))
-            class_pred = np.unique(np.argmax(y_pred, axis=1))
-            class_names = class_test if len(class_test) >= len(class_pred) else class_pred
+            class_names = list(range(0, np.shape(matrix)[0]))
         
     if(y_pred.shape[1] != y_test.shape[1]):
         if(len(class_test) > len(class_pred)):
@@ -520,13 +533,43 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
 
             y_test = y_test_df.values
         
-    TP = np.diag(matrix)
-    FP = matrix.sum(axis=0) - TP
-    FN = matrix.sum(axis=1) - TP
-    TN = matrix.sum() - (FP + FN + TP)
+    if multiclass:
+        TP = np.diag(matrix)
+        FP = matrix.sum(axis=0) - TP
+        FN = matrix.sum(axis=1) - TP
+        TN = matrix.sum() - (FP + FN + TP)
 
-    P = TP+FN
-    N = TN+FP
+        P = TP+FN
+        N = TN+FP
+    else:
+        TP = []
+        FP = []
+        FN = []
+        TN = []
+        P = []
+        N = []
+        
+        for m in matrix:
+            _TP = np.diag(m)    
+            _FP = m.sum(axis=0) - _TP
+            _FN = m.sum(axis=1) - _TP
+            _TN = m.sum() - (_FP + _FN + _TP)
+            _P = _TP + _FN
+            _N = _TN + _FP
+
+            TP.append(_TP[1])    
+            FP.append(_FP[1])
+            FN.append(_FN[1])
+            TN.append(_TN[1])
+            P.append(_P[1])
+            N.append(_N[1])
+        
+        TP = np.asarray(TP)
+        FP = np.asarray(FP)
+        FN = np.asarray(FN)
+        TN = np.asarray(TN)
+        P = np.asarray(P)
+        N = np.asarray(N)
 
     metrics_ = pd.DataFrame()
     rows = list(class_names.copy())
@@ -534,10 +577,10 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     rows.append('Weighted Avg')
     metrics_['Classes'] = rows
     
-    _f1 = np.around(f1_score(y_test, y_pred), decimals=2)
+    _f1 = np.around(f1_score(y_test, y_pred), decimals=2)    
     _f1 = np.append(_f1, np.around(np.mean(_f1), decimals=2))
     _f1 = np.append(_f1, np.round(weighted_average(_f1[0], _f1[1], P[0], P[1]), decimals=2))
-
+    
     _roc_auc = np.around(roc_auc(y_test, y_pred, class_names), decimals=2)
     _roc_auc = np.append(_roc_auc, np.around(np.mean(_roc_auc), decimals=2))
     _roc_auc = np.append(_roc_auc, np.round(weighted_average(_roc_auc[0], _roc_auc[1], P[0], P[1]), decimals=2))
@@ -546,10 +589,10 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     _prc_auc = np.append(_prc_auc, np.around(np.mean(_prc_auc), decimals=2))
     _prc_auc = np.append(_prc_auc, np.round(weighted_average(_prc_auc[0], _prc_auc[1], P[0], P[1]), decimals=2))
 
-    _precision = np.around(precision(TP, FP), decimals=2)
+    _precision = np.around(precision(TP, FP), decimals=2)    
     _precision = np.append(_precision, np.around(np.mean(_precision), decimals=2))
     _precision = np.append(_precision, np.round(weighted_average(_precision[0], _precision[1], P[0], P[1]), decimals=2))
-
+    
     _recall = np.around(recall(TP, P), decimals=2)
     _recall = np.append(_recall, np.around(np.mean(_recall), decimals=2))
     _recall = np.append(_recall, np.round(weighted_average(_recall[0], _recall[1], P[0], P[1]), decimals=2))
@@ -582,13 +625,14 @@ def plot_graphics(y_true, y_pred, class_names=[], save_path=None):
     save_path -- the imaginary part (default 0.0)
     """
     if(len(class_names) == 0):
-        if(len(y_test.shape) == 1):
-            class_names = np.unique(y_test)
+        if(len(y_true.shape) == 1):
+            class_names = np.unique(y_true)
         else:
-            class_names = np.unique(np.argmax(y_test, axis=1))
+            class_names = np.unique(np.argmax(y_true, axis=1))
     
     
     display(plot_confusion_matrix(y_true, y_pred, visualize=True, normalize=True, class_names=class_names, save_path=save_path))
     display(plot_auc_roc_multi_class(y_true, y_pred, class_names=class_names, save_path=save_path))
     display(plot_prc_auc_multiclass(y_true, y_pred, class_names=class_names, save_path=save_path))
 
+    
