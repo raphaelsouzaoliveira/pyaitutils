@@ -475,7 +475,7 @@ def get_metrics(y_test, y_pred, class_names=[], save_path=None):
     multiclass = True    
     if len(np.shape(y_test)) > 1:
         multiclass = False
-    print(multiclass)
+    
     y_test = np.array(y_test)    
     
     try:        
